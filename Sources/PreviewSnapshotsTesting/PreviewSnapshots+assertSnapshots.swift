@@ -14,6 +14,7 @@
 import PreviewSnapshots
 import SnapshotTesting
 import SwiftUI
+import XCTest
 
 extension PreviewSnapshots {
     /// Assert that all of the snapshots defined in a `PreviewSnapshots` collection match their
@@ -33,18 +34,24 @@ extension PreviewSnapshots {
         as snapshotting: Snapshotting<AnyView, Format>,
         named name: String? = nil,
         record recording: Bool = false,
+        snapshotDirectory: String? = nil,
         file: StaticString = #file,
         testName: String = #function,
         line: UInt = #line
     ) {
         for configuration in configurations {
-            assertSnapshot(
+            let failure = verifySnapshot(
                 matching: configure(configuration.state),
                 as: snapshotting,
                 named: configuration.snapshotName(prefix: name),
                 record: recording,
-                file: file, testName: testName, line: line
+                snapshotDirectory: snapshotDirectory,
+                file: file, 
+                testName: testName,
+                line: line
             )
+            guard let message = failure else { return }
+            XCTFail(message, file: file, line: line)
         }
     }
     
